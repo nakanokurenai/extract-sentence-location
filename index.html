@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <title>Extract location of sentences</title>
+        <script async src="./index.js"></script>
+        <style>
+            section > h1 {
+                /* h2 size */
+                font-size: 1.5em;
+            }
+            section > h2 {
+                /* h3 size */
+                font-size: 1.17em;
+            }
+            button {
+                display: block;
+                margin-bottom: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>
+            Extract location of sentences
+        </h1>
+        <section>
+            <h1>Input the writing here:</h1>
+            <textarea id="input" placeholder="Copy and paste to here"></textarea>
+        </section>
+        <section>
+            <h1>Result</h1>
+            <h2>
+                The position of current selection is:
+            </h2>
+            <code id="selection-position">(none)</code>
+            <h2>Paragraph tsv:</h2>
+            <button id="save-all">Save it!</button>
+            <code id="all">
+                (none)
+            </code>
+        </section>
+    </body>
+</html>
