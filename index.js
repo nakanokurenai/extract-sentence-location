@@ -49,25 +49,42 @@ const extractSentences = (input, { paragraphSeps = ['\n'], sentenceSeps = ['.', 
     return withSep
 }
 
+const btoaUnicode = (text) => {
+    // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/btoa (CC0)
+    function toBinary(string) {
+        const codeUnits = new Uint16Array(string.length);
+        for (let i = 0; i < codeUnits.length; i++) {
+            codeUnits[i] = string.charCodeAt(i);
+        }
+        return String.fromCharCode(...new Uint8Array(codeUnits.buffer));
+    }
+    return btoa(toBinary(text))
+}
+
 const main = async () => {
     const elements = getAppElements()
     elements.input.value = ''
     var sentences = [];
+    var all = '';
     const onChange = (value) => {
         if (!value.trim().length) {
             sentences = []
+            all = '';
             elements.result.all.innerText = ''
             elements.result.selectionPosition.innerText = ''
             return
         }
         sentences = extractSentences(value)
-        console.dir(sentences)
-        const tsv = sentences.map((sentences, pPos) =>
-            sentences.map((sentence, sPos) => [`P.${pPos+1}`, `S.${sPos+1}`, sentence.content.trim()].join('\t'))
-                .join('\n')
+        const delimiter = '\t'
+        const header = ['P.', 'S.', 'sentence'].join(delimiter)
+        const body = sentences.map((sentences, pPos) =>
+            sentences.map((sentence, sPos) =>
+                [`P.${pPos+1}`, `S.${sPos+1}`, sentence.content.trim()].join(delimiter)
+            ).join('\n')
         ).join('\n')
-        console.log(tsv)
-        elements.result.all.innerText = tsv
+
+        all = [header, body].join('\n')
+        elements.result.all.innerText = all
     }
     const onSelect = (pos) => {
         const pPosNext = sentences.map(([firstSentence]) => firstSentence.pos).findIndex(paragraphPos => paragraphPos > pos)
@@ -83,9 +100,8 @@ const main = async () => {
     elements.input.addEventListener('select', (e) => onSelect(e.target.selectionStart))
     elements.result.saveAllButton.addEventListener('click', e => {
         e.preventDefault()
-        const tsv = elements.result.all.innerText
-        if (!tsv.trim().length) return
-        const encoded = `data:text/tab-separated-values;base64,${btoa(tsv)}`
+        if (!all.trim().length) return
+        const encoded = `data:text/tab-separated-values;base64,${btoaUnicode(all)}`
         const link = document.createElement("a");
         link.download = `${Date.now()}.tsv`;
         link.href = encoded;
